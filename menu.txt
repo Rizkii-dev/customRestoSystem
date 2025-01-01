@@ -1,0 +1,4 @@
+Burger,MainDish,5000,20
+Pizza,MainDish,7000,10
+Salad,SideDish,3000,15
+Tea,Drink,5000,30
