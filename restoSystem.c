@@ -62,6 +62,7 @@ FoodData* createNode(const char* name, const char* category, int price, int stoc
     FoodData* newNode = (FoodData*)malloc(sizeof(FoodData));
     if (!newNode) {
         printf("Memory allocation failed\n");
+        sleep(3);
         exit(1);
     }
     strncpy(newNode->foodName, name, 30);
@@ -100,6 +101,7 @@ FoodData* deleteNode(FoodData* head, const char* name) {
     }
     if (temp == NULL) {
         printf("Food item '%s' not found\n", name);
+        sleep(3);
         return head;
     }
 
@@ -115,6 +117,7 @@ FoodData* deleteNode(FoodData* head, const char* name) {
 
     free(temp);  // Free the memory of the deleted node
     printf("Food item '%s' deleted successfully.\n", name);
+    sleep(3);
     return head;
 }
 
@@ -123,6 +126,7 @@ FoodData* loadFromFile(const char* filename) {
     FILE* file = fopen(filename, "r");
     if (!file) {
         printf("Failed to open file: %s\n", filename);
+        sleep(3);
         return NULL;
     }
 
@@ -141,6 +145,7 @@ FoodData* loadFromFile(const char* filename) {
             head = insertAtEnd(head, foodName, foodCategory, foodPrice, foodStock);
         } else {
             printf("Invalid line format: %s\n", line);
+            sleep(3);
         }
     }
 
@@ -153,6 +158,7 @@ void saveToFile(const char* filename, FoodData* head) {
     FILE* file = fopen(filename, "w");
     if (!file) {
         printf("Failed to open file for writing: %s\n", filename);
+        sleep(3);
         return;
     }
 
@@ -175,6 +181,7 @@ FoodData* editNode(FoodData* head, const char* name, const char* newCategory, in
     }
     if (temp == NULL) {
         printf("Food item '%s' not found\n", name);
+        sleep(3);
         return head;
     }
 
@@ -185,6 +192,7 @@ FoodData* editNode(FoodData* head, const char* name, const char* newCategory, in
     temp->foodStock = newStock;
 
     printf("Food item '%s' updated successfully.\n", name);
+    sleep(3);
     return head;
 }
 
@@ -201,12 +209,149 @@ void displayForward(FoodData* head) {
     printf("\n");
 }
 
+// Function to count the number of items in the menu
+int getMenuSize(FoodData *head)
+{
+    int count = 0;
+    while (head != NULL)
+    {
+        count++;
+        head = head->next;
+    }
+    return count;
+}
+
+// Function to convert linked list to an array
+FoodData **convertMenuToArray(FoodData *head)
+{
+    int size = getMenuSize(head);
+    FoodData **menuArray = (FoodData **)malloc(size * sizeof(FoodData *));
+
+    int index = 0;
+    while (head != NULL)
+    {
+        menuArray[index++] = head;
+        head = head->next;
+    }
+
+    return menuArray;
+}
+
+// Function to sort menu array based on user choice
+void sortMenu(FoodData **menu, int size, int sortBy)
+{
+    for (int i = 0; i < size - 1; i++)
+    {
+        for (int j = i + 1; j < size; j++)
+        {
+            int compare = 0;
+            if (sortBy == 1)
+            { // Sort by Name
+                compare = strcmp(menu[i]->foodName, menu[j]->foodName);
+            }
+            else if (sortBy == 2)
+            { // Sort by Price
+                compare = menu[i]->foodPrice - menu[j]->foodPrice;
+            }
+            else if (sortBy == 3)
+            { // Sort by Stock
+                compare = menu[i]->foodStock - menu[j]->foodStock;
+            }
+
+            if (compare > 0)
+            {
+                FoodData *temp = menu[i];
+                menu[i] = menu[j];
+                menu[j] = temp;
+            }
+        }
+    }
+}
+
+void displayMenuBySorting(FoodData *head)
+{
+    if (!head)
+    {
+        printf("The menu is empty!\n");
+        sleep(3);
+        return;
+    }
+
+    int sortBy;
+    printf("\n\nSort Menu by:\n");
+    printf("1. Name\n");
+    printf("2. Price\n");
+    printf("3. Stock\n");
+    printf("Enter your choice: ");
+    scanf("%d", &sortBy);
+    getchar(); // Consume newline
+
+    int menuSize = getMenuSize(head);
+    FoodData **menuArray = convertMenuToArray(head);
+    sortMenu(menuArray, menuSize, sortBy);
+
+    // Dynamically find and store unique categories
+    char categories[100][11]; // Assuming a maximum of 100 categories
+    int categoryCount = 0;
+
+    for (int i = 0; i < menuSize; i++)
+    {
+        int found = 0;
+        for (int j = 0; j < categoryCount; j++)
+        {
+            if (strcmp(categories[j], menuArray[i]->foodCategory) == 0)
+            {
+                found = 1;
+                break;
+            }
+        }
+        if (!found)
+        {
+            strcpy(categories[categoryCount], menuArray[i]->foodCategory);
+            categoryCount++;
+        }
+    }
+
+    // Display the menu grouped by categories
+    // printf("\n--- Menu by Categories ---\n");
+    for (int i = 0; i < categoryCount; i++)
+    {
+        printf("\n\nCategory: %s\n", categories[i]);
+        printf("=========================================================================\n");
+
+        int theFirstOfFoodCategory = 1;
+        for (int j = 0; j < menuSize; j++)
+        {
+            if (strcmp(menuArray[j]->foodCategory, categories[i]) == 0)
+            {
+                if (theFirstOfFoodCategory == 1) {
+                    printf("| Name: %-31s | Price: %-7d | Stock: %-5d |\n",
+                            menuArray[j]->foodName, menuArray[j]->foodPrice, menuArray[j]->foodStock);
+
+                    theFirstOfFoodCategory = 0;
+                }else {
+                    printf("|-----------------------------------------------------------------------|\n");
+
+                    printf("| Name: %-31s | Price: %-7d | Stock: %-5d |\n",
+                            menuArray[j]->foodName, menuArray[j]->foodPrice, menuArray[j]->foodStock);
+                }
+            }
+        }
+
+        printf("=========================================================================\n");
+    }
+    printf("----------------------------\n");
+
+    free(menuArray); // Free allocated memory
+}
+
 // Function to display menu grouped by category
 void displayMenuByCategory(FoodData **head)
 {
     if (!(*head))
     {
         printf("The menu is empty!\n");
+        sleep(3);
         return;
     }
 
@@ -298,6 +443,7 @@ FoodData* handleAddFoodItem(FoodData* head, const char* filename) {
     head = insertAtEnd(head, name, category, price, stock);
     saveToFile(filename, head);
     printf("Food item added successfully.\n");
+    sleep(3);
 
     return head;
 }
@@ -360,9 +506,10 @@ void adminMenu(FoodData** head, const char* filename) {
         }
 
         if (choice == '1') {
-            displayMenuByCategory(head);
+            displayMenuBySorting(*head);
             printf("Please enter any key to continue with the menu.\n");
             getch(); // Wait for a key press
+            system("cls"); // Clear screen
         }
 
         if (choice == '2') {
@@ -412,6 +559,7 @@ void displayBasketByFoodName(BasketItem *basket)
     if (!basket)
     {
         printf("Your basket is empty!\n");
+        sleep(3);
         return;
     }
 
@@ -472,6 +620,7 @@ BasketItem *addToBasket(BasketItem *basket, const char *name, int quantity, int 
     if (!newItem)
     {
         printf("Memory allocation failed\n");
+        sleep(3);
         exit(1);
     }
     strncpy(newItem->foodName, name, 30);
@@ -502,10 +651,12 @@ BasketItem *handleAddToBasket(FoodData *head, BasketItem *basket)
     if (temp == NULL)
     {
         printf("Food item not found!\n");
+        sleep(3);
     }
     else if (temp->foodStock <= 0)
     {
         printf("Out of stock!\n");
+        sleep(3);
     }
     else
     {
@@ -548,12 +699,14 @@ BasketItem *removeFromBasket(BasketItem *basket, const char *name)
             }
             printf("Removed %s from the basket.\n", temp->foodName);
             free(temp);
+            sleep(3);
             return basket;
         }
         prev = temp;
         temp = temp->next;
     }
     printf("Item not found in the basket!\n");
+    sleep(3);
     return basket;
 }
 
@@ -601,9 +754,10 @@ void userMenu(FoodData **head)
 
         if (choice == '1')
         {
-            displayMenuByCategory(head);
+            displayMenuBySorting(*head);
             printf("Please enter any key to continue with the menu.\n");
             getch(); // Wait for a key press
+            system("cls"); // Clear screen
         }
 
         if (choice == '2')
@@ -702,44 +856,4 @@ int main() {
     freeList(head);
 
     return 0;
-
-
-    // Testing the functions
-
-    // const char* filename = "menu.txt";
-
-    // // Load data from file into the doubly linked list
-    // FoodData* head = loadFromFile(filename);
-
-    // // Display the list
-    // if (head) {
-    //     displayForward(head);
-    // } else {
-    //     printf("No data loaded.\n");
-    // }
-
-    // // Add a new item
-    // head = insertAtEnd(head, "Hotdog", "Snack", 4000, 25);
-    // saveToFile(filename, head);
-    // printf("Added 'Hotdog'.\n");
-
-    // // Delete an item
-    // head = deleteNode(head, "Pizza");
-    // saveToFile(filename, head);
-    // printf("Deleted 'Pizza'.\n");
-
-    // // Edit an item
-    // head = editNode(head, "Burger", "FastFood", 5500, 18);
-    // saveToFile(filename, head);
-    // printf("Edited 'Burger'.\n");
-
-    // // Display the updated list
-    // displayForward(head);
-
-    // // Free the list
-    // freeList(head);
-
-    // return 0;
-
-    
 }
