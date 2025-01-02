@@ -527,7 +527,7 @@ void userMenu(FoodData **head)
     system("cls"); // Clear screen
 
     BasketItem *basket = NULL;
-    int choice;
+    char choice;
     char foodName[31];
     int quantity;
 
@@ -541,37 +541,50 @@ void userMenu(FoodData **head)
         printf("5. Checkout and Pay\n");
         printf("6. Exit\n");
         printf("Enter your choice: ");
-        scanf("%d", &choice);
-        getchar(); // Consume newline
+        choice = getch();
 
-        switch (choice)
+        if (choice < '1' || choice > '6')
         {
-        case 1:
+            printf("Invalid choice. Try again.\n");
+            sleep(3);
+            system("cls"); // Clear screen
+            continue;
+        }
+
+        if (choice == '1')
+        {
             displayMenuByCategory(head);
             printf("Please enter any key to continue with the menu.\n");
             getch(); // Wait for a key press
-            break;
-        case 2:
+        }
+
+        if (choice == '2')
+        {
             displayMenuByCategory(head);
             basket = handleAddToBasket(*head, basket);
             system("cls"); // Clear screen
+        }
 
-            break;
-        case 3:
-            displayBasket(basket);
+        if (choice == '3')
+        {
+            displayBasketByFoodName(basket);
             printf("Enter food name to remove from basket: ");
             fgets(foodName, sizeof(foodName), stdin);
             foodName[strcspn(foodName, "\n")] = 0; // Remove newline
 
             basket = removeFromBasket(basket, foodName);
             system("cls"); // Clear screen
-
-            break;
-        case 4:
+        }
+        
+        if (choice == '4')
+        {
             displayBasketByFoodName(basket);
+            printf("Please enter any key to continue with the menu.\n");
+            getch(); // Wait for a key press
+        }
 
-            break;
-        case 5:
+        if (choice == '5')
+        {
             printf("\n--- Payment Receipt ---\n");
             displayBasket(basket);
             freeBasket(basket);
@@ -579,17 +592,14 @@ void userMenu(FoodData **head)
             printf("Thank you for your purchase!\n");
             printf("Please enter any key to continue with the menu.\n");
             getch(); // Wait for a key press
-
             return;
-        case 6:
+        }
+
+        if (choice == '6')
+        {
             printf("Exiting user menu.\n");
             freeBasket(basket);
-
             return;
-        default:
-            printf("Invalid choice. Try again.\n");
-            sleep(3);
-            system("cls"); // Clear screen
         }
     }
 }
