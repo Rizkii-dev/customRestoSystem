@@ -14,6 +14,14 @@ typedef struct FoodData {
     struct FoodData* next;
 } FoodData;
 
+typedef struct BasketItem
+{
+    char foodName[31];
+    int quantity;
+    int price;
+    struct BasketItem *next;
+} BasketItem;
+
 // Function to create a new node
 FoodData* createNode(const char* name, const char* category, int price, int stock) {
     FoodData* newNode = (FoodData*)malloc(sizeof(FoodData));
@@ -279,9 +287,194 @@ void adminMenu(FoodData** head, const char* filename) {
     }
 }
 
+// Display the items in the basket
+void displayBasket(BasketItem *basket)
+{
+    BasketItem *temp = basket;
+    printf("\n--- Basket ---\n");
+    printf("%-30s %-10s %-6s\n", "Name", "Quantity", "Price");
+    int total = 0;
+    while (temp != NULL)
+    {
+        printf("%-30s %-10d %-6d\n", temp->foodName, temp->quantity, temp->price * temp->quantity);
+        total += temp->price * temp->quantity;
+        temp = temp->next;
+    }
+    printf("Total: %d\n\n", total);
+}
+
+// Add a food item to the basket
+BasketItem *addToBasket(BasketItem *basket, const char *name, int quantity, int price)
+{
+    BasketItem *newItem = (BasketItem *)malloc(sizeof(BasketItem));
+    if (!newItem)
+    {
+        printf("Memory allocation failed\n");
+        exit(1);
+    }
+    strncpy(newItem->foodName, name, 30);
+    newItem->foodName[30] = '\0'; // Null terminate
+    newItem->quantity = quantity;
+    newItem->price = price;
+    newItem->next = basket; // Insert at the beginning
+    return newItem;
+}
+
+// Modular function to handle adding food to the basket
+BasketItem *handleAddToBasket(FoodData *head, BasketItem *basket)
+{
+    char foodName[31];
+    int quantity;
+
+    printf("Enter food name to add: ");
+    fgets(foodName, sizeof(foodName), stdin);
+    foodName[strcspn(foodName, "\n")] = 0; // Remove newline
+
+    // Search for the food item in the menu
+    FoodData *temp = head;
+    while (temp != NULL && strcmp(temp->foodName, foodName) != 0)
+    {
+        temp = temp->next;
+    }
+
+    if (temp == NULL)
+    {
+        printf("Food item not found!\n");
+    }
+    else if (temp->foodStock <= 0)
+    {
+        printf("Out of stock!\n");
+    }
+    else
+    {
+        printf("Enter quantity: ");
+        scanf("%d", &quantity);
+        getchar(); // Consume newline
+
+        if (quantity > temp->foodStock)
+        {
+            printf("Not enough stock!\n");
+        }
+        else
+        {
+            basket = addToBasket(basket, temp->foodName, quantity, temp->foodPrice);
+            temp->foodStock -= quantity;
+            printf("Added to basket.\n");
+        }
+    }
+
+    return basket;
+}
+
+// Function to remove an item from the basket
+BasketItem *removeFromBasket(BasketItem *basket, const char *name)
+{
+    BasketItem *temp = basket;
+    BasketItem *prev = NULL;
+
+    while (temp != NULL)
+    {
+        if (strcmp(temp->foodName, name) == 0)
+        {
+            if (prev == NULL)
+            { // First item in the basket
+                basket = temp->next;
+            }
+            else
+            {
+                prev->next = temp->next;
+            }
+            printf("Removed %s from the basket.\n", temp->foodName);
+            free(temp);
+            return basket;
+        }
+        prev = temp;
+        temp = temp->next;
+    }
+    printf("Item not found in the basket!\n");
+    return basket;
+}
+
+// Free the basket
+void freeBasket(BasketItem *basket)
+{
+    BasketItem *temp;
+    while (basket != NULL)
+    {
+        temp = basket;
+        basket = basket->next;
+        free(temp);
+    }
+}
+
 // User menu
-void userMenu (FoodData** head, const char* filename) {
-    // Will be added later
+void userMenu(FoodData **head)
+{
+    system("cls"); // Clear screen
+
+    BasketItem *basket = NULL;
+    int choice;
+    char foodName[31];
+    int quantity;
+
+    while (1)
+    {
+        printf("\n--- User Menu ---\n");
+        printf("1. View Menu\n");
+        printf("2. Add Food to Basket\n");
+        printf("3. Remove Food from Basket\n");
+        printf("4. View Basket\n");
+        printf("5. Checkout and Pay\n");
+        printf("6. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+        getchar(); // Consume newline
+
+        switch (choice)
+        {
+        case 1:
+            displayForward(*head);
+
+            break;
+        case 2:
+            basket = handleAddToBasket(*head, basket);
+            system("cls"); // Clear screen
+
+            break;
+        case 3:
+            printf("Enter food name to remove from basket: ");
+            fgets(foodName, sizeof(foodName), stdin);
+            foodName[strcspn(foodName, "\n")] = 0; // Remove newline
+
+            basket = removeFromBasket(basket, foodName);
+            system("cls"); // Clear screen
+
+            break;
+        case 4:
+            displayBasket(basket);
+
+            break;
+        case 5:
+            printf("\n--- Payment Receipt ---\n");
+            displayBasket(basket);
+            freeBasket(basket);
+            basket = NULL;
+            printf("Thank you for your purchase!\n");
+            printf("Please enter any key to continue with the menu.\n");
+            getch(); // Wait for a key press
+
+            return;
+        case 6:
+            printf("Exiting user menu.\n");
+            freeBasket(basket);
+            
+            return;
+        default:
+            printf("Invalid choice. Try again.\n");
+            sleep(3);
+            system("cls"); // Clear screen
+        }
+    }
 }
 
 void LandingMenu(FoodData **head, const char *filename, char secretAdminMenuKey)
@@ -302,7 +495,7 @@ void LandingMenu(FoodData **head, const char *filename, char secretAdminMenuKey)
         }
 
         if (choice == '1') {
-            userMenu(head, filename);
+            userMenu(head);
         } else
 
         if (choice == '2') {
@@ -372,4 +565,6 @@ int main() {
     // freeList(head);
 
     // return 0;
+
+    
 }
