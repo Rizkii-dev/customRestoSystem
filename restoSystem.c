@@ -586,7 +586,7 @@ void userMenu(FoodData **head)
         if (choice == '5')
         {
             printf("\n--- Payment Receipt ---\n");
-            displayBasket(basket);
+            displayBasketByFoodName(basket);
             freeBasket(basket);
             basket = NULL;
             printf("Thank you for your purchase!\n");
