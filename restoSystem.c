@@ -166,6 +166,60 @@ void displayForward(FoodData* head) {
     printf("\n");
 }
 
+// Function to display menu grouped by category
+void displayMenuByCategory(FoodData **head)
+{
+    if (!(*head))
+    {
+        printf("The menu is empty!\n");
+        return;
+    }
+
+    // Dynamically find and store unique categories
+    char categories[100][11]; // Assuming a maximum of 100 categories
+    int categoryCount = 0;
+
+    FoodData *temp = *head;
+    while (temp != NULL)
+    {
+        int found = 0;
+        for (int i = 0; i < categoryCount; i++)
+        {
+            if (strcmp(categories[i], temp->foodCategory) == 0)
+            {
+                found = 1;
+                break;
+            }
+        }
+        if (!found)
+        {
+            strcpy(categories[categoryCount], temp->foodCategory);
+            categoryCount++;
+        }
+        temp = temp->next;
+    }
+
+    // Display the menu grouped by categories
+    printf("\n--- Menu by Categories ---\n");
+    for (int i = 0; i < categoryCount; i++)
+    {
+        printf("\nCategory: %s\n", categories[i]);
+        printf("----------------------------\n");
+
+        temp = *head;
+        while (temp != NULL)
+        {
+            if (strcmp(temp->foodCategory, categories[i]) == 0)
+            {
+                printf("Name: %s, Price: %d, Stock: %d\n",
+                        temp->foodName, temp->foodPrice, temp->foodStock);
+            }
+            temp = temp->next;
+        }
+    }
+    printf("----------------------------\n");
+}
+
 // Free the entire list
 void freeList(FoodData* head) {
     FoodData* temp;
@@ -258,7 +312,9 @@ void adminMenu(FoodData** head, const char* filename) {
         }
 
         if (choice == '1') {
-            displayForward(*head);
+            displayMenuByCategory(head);
+            printf("Please enter any key to continue with the menu.\n");
+            getch(); // Wait for a key press
         }
 
         if (choice == '2') {
@@ -267,13 +323,13 @@ void adminMenu(FoodData** head, const char* filename) {
         }
 
         if (choice == '3') {
-            displayForward(*head);
+            displayMenuByCategory(head);
             *head = handleEditFoodItem(*head, filename);
             system("cls"); // Clear screen
         }
 
         if (choice == '4') {
-            displayForward(*head);
+            displayMenuByCategory(head);
             *head = handleDeleteFoodItem(*head, filename);
             system("cls"); // Clear screen
         }
@@ -301,6 +357,64 @@ void displayBasket(BasketItem *basket)
         temp = temp->next;
     }
     printf("Total: %d\n\n", total);
+}
+
+void displayBasketByFoodName(BasketItem *basket)
+{
+    if (!basket)
+    {
+        printf("Your basket is empty!\n");
+        return;
+    }
+
+    printf("\n--- Basket Contents ---\n");
+
+    // Dynamically find and store unique food names
+    char foodNames[100][31]; // Assuming a maximum of 100 unique food items in the basket
+    int foodCount = 0;
+
+    BasketItem *temp = basket;
+    while (temp != NULL)
+    {
+        int found = 0;
+        for (int i = 0; i < foodCount; i++)
+        {
+            if (strcmp(foodNames[i], temp->foodName) == 0)
+            {
+                found = 1;
+                break;
+            }
+        }
+        if (!found)
+        {
+            strcpy(foodNames[foodCount], temp->foodName);
+            foodCount++;
+        }
+        temp = temp->next;
+    }
+
+    // Group and display basket items by food name
+    int totalPrice = 0;
+    for (int i = 0; i < foodCount; i++)
+    {
+        printf("\nFood: %s\n", foodNames[i]);
+        printf("----------------------------\n");
+
+        temp = basket;
+        while (temp != NULL)
+        {
+            if (strcmp(temp->foodName, foodNames[i]) == 0)
+            {
+                printf("Quantity: %d, Price per Unit: %d, Subtotal: %d\n",
+                       temp->quantity, temp->price, temp->quantity * temp->price);
+                totalPrice += temp->quantity * temp->price;
+            }
+            temp = temp->next;
+        }
+    }
+
+    printf("\nTotal Price: %d\n", totalPrice);
+    printf("----------------------------\n");
 }
 
 // Add a food item to the basket
@@ -433,15 +547,18 @@ void userMenu(FoodData **head)
         switch (choice)
         {
         case 1:
-            displayForward(*head);
-
+            displayMenuByCategory(head);
+            printf("Please enter any key to continue with the menu.\n");
+            getch(); // Wait for a key press
             break;
         case 2:
+            displayMenuByCategory(head);
             basket = handleAddToBasket(*head, basket);
             system("cls"); // Clear screen
 
             break;
         case 3:
+            displayBasket(basket);
             printf("Enter food name to remove from basket: ");
             fgets(foodName, sizeof(foodName), stdin);
             foodName[strcspn(foodName, "\n")] = 0; // Remove newline
@@ -451,7 +568,7 @@ void userMenu(FoodData **head)
 
             break;
         case 4:
-            displayBasket(basket);
+            displayBasketByFoodName(basket);
 
             break;
         case 5:
@@ -467,7 +584,7 @@ void userMenu(FoodData **head)
         case 6:
             printf("Exiting user menu.\n");
             freeBasket(basket);
-            
+
             return;
         default:
             printf("Invalid choice. Try again.\n");
