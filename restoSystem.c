@@ -22,6 +22,41 @@ typedef struct BasketItem
     struct BasketItem *next;
 } BasketItem;
 
+void LargeTitleRestaurant()
+{
+    printf("======================================================================\n");
+    printf("|   _        _     _    _      _    _    __     _       _           |\n");
+    printf("|  | |      | |   | |  |  \\    /  |  | |  |  \\   | |     / \\          |\n");
+    printf("|  | |      | |   | |  |   \\  /   |  | |  |   \\  | |    / _ \\         |\n");
+    printf("|  | |      | |   | |  | |\\ \\/ /| |  | |  | |\\ \\ | |   / /_\\ \\        |\n");
+    printf("|  | |__  | |_| |  | | \\  / | |  | |  | | \\ \\| |  / /   \\ \\       |\n");
+    printf("|  |__| |__|  ||  \\/  ||  ||  ||  \\_| //     \\_\\      |\n");
+    printf("|                                                                     |\n");
+    printf("|       __     _     _     _     _     _     _     ____       |\n");
+    printf("|      |  _ \\   | |   |  \\   | |   | |   |  \\   | |   / ___\\      |\n");
+    printf("|      | |  | |  | |   |   \\  | |   | |   |   \\  | |  |  |  _       |\n");
+    printf("|      | |  | |  | |   | |\\ \\ | |   | |   | |\\ \\ | |  |  | |_  |      |\n");
+    printf("|      | |_| |  | |   | | \\ \\| |   | |   | | \\ \\| |  |  |__| |      |\n");
+    printf("|      |__/   ||   ||  \\_|   ||   ||  \\_|   \\___/       |\n");
+    printf("======================================================================\n");
+}
+
+void LargeTitleMenu()
+{
+    printf("============================================================================\n");
+    printf("|                                 MENU                                      |\n");
+    printf("|  __  __     _       __        __    _   __   __    ___    |\n");
+    printf("| |  _||   |   / \\     |  _  \\      |  _ \\  | | |   | |  _|  | _|   |\n");
+    printf("| | |_   | |    / _ \\    | || |      | |) | | |   | |   | |_   | |__    |\n");
+    printf("| |_  |  | |   / /\\ \\   |  _  /      |  _ <  | |   | |   |  _|  |_  |   |\n");
+    printf("|  _| |  | |  / /   \\ \\  | | \\ \\      | |) | | |   | |   | |_    _| |   |\n");
+    printf("| |_/  || //     \\\\ ||  ||     |_/  ||   ||   |_| |_|   |\n");
+    printf("|                                                                           |\n");
+    printf("|                     Taste the Stars in Every Bite!                        |\n");
+    printf("|                                                                           |\n");
+    printf("============================================================================\n");
+}
+
 // Function to create a new node
 FoodData* createNode(const char* name, const char* category, int price, int stock) {
     FoodData* newNode = (FoodData*)malloc(sizeof(FoodData));
@@ -200,24 +235,37 @@ void displayMenuByCategory(FoodData **head)
     }
 
     // Display the menu grouped by categories
-    printf("\n--- Menu by Categories ---\n");
+    // printf("\n--- Menu by Categories ---\n");
     for (int i = 0; i < categoryCount; i++)
     {
-        printf("\nCategory: %s\n", categories[i]);
-        printf("----------------------------\n");
+        printf("\n\nCategory: %s\n", categories[i]);
+        printf("=========================================================================\n");
 
         temp = *head;
+        int theFirstOfFoodCategory = 1;
         while (temp != NULL)
         {
             if (strcmp(temp->foodCategory, categories[i]) == 0)
             {
-                printf("Name: %s, Price: %d, Stock: %d\n",
-                        temp->foodName, temp->foodPrice, temp->foodStock);
+                if (theFirstOfFoodCategory == 1)
+                {
+                    printf("| Name: %-31s | Price: %-7d | Stock: %-5d |\n",
+                            temp->foodName, temp->foodPrice, temp->foodStock);
+                    
+                    theFirstOfFoodCategory = 0;
+                }else {
+                    printf("|-----------------------------------------------------------------------|\n");
+
+                    printf("| Name: %-31s | Price: %-7d | Stock: %-5d |\n",
+                            temp->foodName, temp->foodPrice, temp->foodStock);
+                }
             }
             temp = temp->next;
         }
+
+        printf("=========================================================================");
     }
-    printf("----------------------------\n");
+    printf("\n----------------------------\n");
 }
 
 // Free the entire list
@@ -533,7 +581,7 @@ void userMenu(FoodData **head)
 
     while (1)
     {
-        printf("\n--- User Menu ---\n");
+        LargeTitleMenu();
         printf("1. View Menu\n");
         printf("2. Add Food to Basket\n");
         printf("3. Remove Food from Basket\n");
@@ -611,7 +659,7 @@ void LandingMenu(FoodData **head, const char *filename, char secretAdminMenuKey)
     while (1) {
         system("cls"); // Clear screen
 
-        printf("\n--- Welcome to the Restaurant Management System ---\n");
+        LargeTitleRestaurant();
         printf("1. User Menu\n");
         printf("2. Exit\n");
         printf("Enter your choice: ");
