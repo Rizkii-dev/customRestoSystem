@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <conio.h> // For getch function
+#include <unistd.h> // For sleep function
 
 // Define the FoodData structure
 typedef struct FoodData {
@@ -229,7 +231,7 @@ FoodData* handleDeleteFoodItem(FoodData* head, const char* filename) {
 
 // Admin menu
 void adminMenu(FoodData** head, const char* filename) {
-    int choice;
+    char choice;
 
     system("cls"); // Clear screen
     while (1) {
@@ -240,33 +242,40 @@ void adminMenu(FoodData** head, const char* filename) {
         printf("4. Delete Food Item\n");
         printf("5. Exit\n");
         printf("Enter your choice: ");
-        scanf("%d", &choice);
-        getchar();  // Consume newline
+        choice = getch(); // Get a single character
 
-        switch (choice) {
-            case 1:
-                displayForward(*head);
-                break;
-            case 2:
-                *head = handleAddFoodItem(*head, filename);
-                system("cls"); // Clear screen
-                break;
-            case 3:
-                displayForward(*head);
-                *head = handleEditFoodItem(*head, filename);
-                system("cls"); // Clear screen
-                break;
-            case 4:
-                displayForward(*head);
-                *head = handleDeleteFoodItem(*head, filename);
-                system("cls"); // Clear screen
-                break;
-            case 5:
-                printf("Exiting admin menu.\n");
-                return;
-            default:
-                printf("Invalid choice. Try again.\n");
+        if (choice < '1' || choice > '5') {
+            printf("Invalid choice. Try again.\n");
+            continue;
         }
+
+        if (choice == '1') {
+            displayForward(*head);
+        }
+
+        if (choice == '2') {
+            *head = handleAddFoodItem(*head, filename);
+            system("cls"); // Clear screen
+        }
+
+        if (choice == '3') {
+            displayForward(*head);
+            *head = handleEditFoodItem(*head, filename);
+            system("cls"); // Clear screen
+        }
+
+        if (choice == '4') {
+            displayForward(*head);
+            *head = handleDeleteFoodItem(*head, filename);
+            system("cls"); // Clear screen
+        }
+
+        if (choice == '5') {
+            printf("Exiting admin menu.\n");
+            return;
+        }
+
+        sleep(3);
     }
 }
 
@@ -275,33 +284,37 @@ void userMenu (FoodData** head, const char* filename) {
     // Will be added later
 }
 
-void LandingMenu (FoodData** head, const char* filename) {
-    int choice;
+void LandingMenu(FoodData **head, const char *filename, char secretAdminMenuKey)
+{
+    char choice;
 
     while (1) {
         system("cls"); // Clear screen
 
         printf("\n--- Welcome to the Restaurant Management System ---\n");
-        printf("1. Admin Menu\n");
-        printf("2. User Menu\n");
-        printf("3. Exit\n");
+        printf("1. User Menu\n");
+        printf("2. Exit\n");
         printf("Enter your choice: ");
-        scanf("%d", &choice);
-        getchar();  // Consume newline
+        choice = getch(); // Get a single character
 
-        switch (choice) {
-            case 1:
-                adminMenu(head, filename);
-                break;
-            case 2:
-                userMenu(head, filename);
-                break;
-            case 3:
-                printf("Exiting the program.\n");
-                return;
-            default:
-                printf("Invalid choice. Try again.\n");
+        if (choice == secretAdminMenuKey) {
+            adminMenu(head, filename);
         }
+
+        if (choice == '1') {
+            userMenu(head, filename);
+        } else
+
+        if (choice == '2') {
+            printf("Exiting the program.\n");
+            return;
+        }
+
+        if (choice != '1' && choice != '2') {
+            printf("Invalid choice. Try again.\n");
+        }
+
+        sleep(3);
     }
 }
 
@@ -309,11 +322,13 @@ int main() {
     system("cls"); // Clear screen
     const char* filename = "menu.txt";
 
+    char secretAdminMenuKey = 'm';
+
     // Load data from file into the doubly linked list
     FoodData* head = loadFromFile(filename);
 
     // Run the landing menu
-    LandingMenu(&head, filename);
+    LandingMenu(&head, filename, secretAdminMenuKey);
 
     // Free the linked list
     freeList(head);
